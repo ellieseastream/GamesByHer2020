@@ -16,6 +16,9 @@ const std::string kAsteroid_small_02 = "../assets/gfx/asteroid-small-02.png";
 const std::string kAsteroid_medium_01 = "../assets/gfx/asteroid-medium-01.png";
 const std::string kAsteroid_large_01 = "../assets/gfx/asteroid-large-01.png";
 static const float ACCELERATION = 2000.0f;
+static const float DEGREES_PER_SECOND_SMALL_ASTEROID = 7.0f;
+static const float DEGREES_PER_SECOND_MEDIUM_ASTEROID = 10.0f;
+static const float DEGREES_PER_SECOND_LARGE_ASTEROID = 2.0f;
 
 void MainGameScene::onInitializeScene() {
     std::cout << "Hello from onInitialize in MainGameScene! \n";
@@ -57,7 +60,7 @@ void MainGameScene::onInitializeScene() {
     addChild(boundary);
     
     // Add asteroids
-    std::shared_ptr<gbh::SpriteNode> asteroid_1 = std::make_shared<gbh::SpriteNode>(kAsteroid_small_01);
+    asteroid_1 = std::make_shared<gbh::SpriteNode>(kAsteroid_small_01);
     asteroid_1->setOrigin(0.5f, 0.5f);
     asteroid_1->setPosition(200, 200);
     asteroid_1->setPhysicsBody(getPhysicsWorld()->createCircle(18));
@@ -65,7 +68,7 @@ void MainGameScene::onInitializeScene() {
     asteroid_1->getPhysicsBody()->setLinearDamping(0.2);
     addChild(asteroid_1);
     
-    std::shared_ptr<gbh::SpriteNode> asteroid_2 = std::make_shared<gbh::SpriteNode>(kAsteroid_small_02);
+    asteroid_2 = std::make_shared<gbh::SpriteNode>(kAsteroid_small_02);
     asteroid_2->setOrigin(0.5f, 0.5f);
     asteroid_2->setPosition(400, 400);
     asteroid_2->setPhysicsBody(getPhysicsWorld()->createCircle(13));
@@ -73,7 +76,7 @@ void MainGameScene::onInitializeScene() {
     asteroid_2->getPhysicsBody()->setLinearDamping(0.2);
     addChild(asteroid_2);
     
-    std::shared_ptr<gbh::SpriteNode> asteroid_3 = std::make_shared<gbh::SpriteNode>(kAsteroid_medium_01);
+    asteroid_3 = std::make_shared<gbh::SpriteNode>(kAsteroid_medium_01);
     asteroid_3->setOrigin(0.5f, 0.5f);
     asteroid_3->setPosition(500, 500);
     asteroid_3->setPhysicsBody(getPhysicsWorld()->createCircle(30));
@@ -81,7 +84,7 @@ void MainGameScene::onInitializeScene() {
     asteroid_3->getPhysicsBody()->setLinearDamping(0.2);
     addChild(asteroid_3);
     
-    std::shared_ptr<gbh::SpriteNode> asteroid_4 = std::make_shared<gbh::SpriteNode>(kAsteroid_large_01);
+    asteroid_4 = std::make_shared<gbh::SpriteNode>(kAsteroid_large_01);
     asteroid_4->setOrigin(0.5f, 0.5f);
     asteroid_4->setPosition(720, 200);
     asteroid_4->setPhysicsBody(getPhysicsWorld()->createCircle(60));
@@ -116,6 +119,11 @@ void MainGameScene::onUpdate(double deltaTime) {
     
     // Multiply the move direction by the acceleration and apply the force to the player ship.
     m_playerShip->getPhysicsBody()->applyForceToCenter(moveDirection * ACCELERATION);
+    
+    asteroid_1->rotate(DEGREES_PER_SECOND_SMALL_ASTEROID * deltaTime);
+    asteroid_2->rotate(-DEGREES_PER_SECOND_SMALL_ASTEROID * deltaTime);
+    asteroid_3->rotate(DEGREES_PER_SECOND_MEDIUM_ASTEROID * deltaTime);
+    asteroid_4->rotate(-DEGREES_PER_SECOND_LARGE_ASTEROID * deltaTime);
 }
 
 void MainGameScene::onShowScene() {

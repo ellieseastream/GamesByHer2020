@@ -11,5 +11,9 @@ protected:
     void onHideScene() override;
 private:
     std::shared_ptr<gbh::SpriteNode> m_playerShip;
+    std::shared_ptr<gbh::SpriteNode> asteroid_1;
+    std::shared_ptr<gbh::SpriteNode> asteroid_2;
+    std::shared_ptr<gbh::SpriteNode> asteroid_3;
+    std::shared_ptr<gbh::SpriteNode> asteroid_4;
     sf::Music m_mainSceneMusic;
 };
