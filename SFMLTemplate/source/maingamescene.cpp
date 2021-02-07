@@ -1,4 +1,5 @@
 #include "maingamescene.h"
+#include "followcameranode.h"
 #include "sfml-engine/game.h"
 #include "sfml-engine/mathutils.h"
 #include "sfml-engine/shapenode.h"
@@ -93,6 +94,16 @@ void MainGameScene::onInitializeScene() {
     addChild(asteroid_4);
     
     setDrawPhysicsDebug(true);
+    
+    
+// Add camera
+    std::cout << "... adding camera...\n";
+    m_followCamera = std::make_shared<FollowCameraNode>();
+    m_followCamera->setTarget(m_playerShip);
+    m_followCamera->setPosition(640, 360);
+    addChild(m_followCamera);
+    setCamera(m_followCamera);
+    
     std::cout << "...done!\n";
 }
 
@@ -124,6 +135,8 @@ void MainGameScene::onUpdate(double deltaTime) {
     asteroid_2->rotate(-DEGREES_PER_SECOND_SMALL_ASTEROID * deltaTime);
     asteroid_3->rotate(DEGREES_PER_SECOND_MEDIUM_ASTEROID * deltaTime);
     asteroid_4->rotate(-DEGREES_PER_SECOND_LARGE_ASTEROID * deltaTime);
+    
+    // move camera
 }
 
 void MainGameScene::onShowScene() {

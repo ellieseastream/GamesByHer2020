@@ -1,6 +1,8 @@
 #pragma once
 
+#include "followcameranode.h"
 #include "sfml-engine/scene.h"
+#include "sfml-engine/cameranode.h"
 #include <SFML/Audio.hpp>
 
 class MainGameScene : public gbh::Scene {
@@ -16,4 +18,5 @@ private:
     std::shared_ptr<gbh::SpriteNode> asteroid_3;
     std::shared_ptr<gbh::SpriteNode> asteroid_4;
     sf::Music m_mainSceneMusic;
+    std::shared_ptr<FollowCameraNode> m_followCamera;
 };
