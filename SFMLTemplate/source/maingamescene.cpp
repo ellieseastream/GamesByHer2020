@@ -8,6 +8,7 @@
 
 #include <iostream>
 
+const std::string kCheckpoint = "../assets/gfx/checkpoint.png";
 //const std::string kMainSceneMusic = "../assets/music/victor_2.ogg";
 const std::string kMainSceneMusic = "../assets/music/victor_7.ogg";
 const std::string kStarfield = "../assets/gfx/starfield-01.png";
@@ -20,6 +21,7 @@ static const float ACCELERATION = 2000.0f;
 static const float DEGREES_PER_SECOND_SMALL_ASTEROID = 7.0f;
 static const float DEGREES_PER_SECOND_MEDIUM_ASTEROID = 10.0f;
 static const float DEGREES_PER_SECOND_LARGE_ASTEROID = 2.0f;
+const sf::Color inactiveCheckpointColor = sf::Color(255, 255, 255, 64);
 
 void MainGameScene::onInitializeScene() {
     std::cout << "Hello from onInitialize in MainGameScene! \n";
@@ -103,6 +105,29 @@ void MainGameScene::onInitializeScene() {
     m_followCamera->setPosition(640, 360);
     addChild(m_followCamera);
     setCamera(m_followCamera);
+    
+    // Adding checkpoints
+    std::vector<sf::Vector2f> checkpointPositions = {
+        sf::Vector2f(640.0f, 720.0f),
+        sf::Vector2f(1240.0f, 200.0f),
+        sf::Vector2f(80.0f, 400.0f),
+    };
+    
+    for(int i= 0; i < checkpointPositions.size()-1; i++) {
+        std::cout << "...adding checkpoint sprite...\n";
+        std::shared_ptr<gbh::SpriteNode> node = std::make_shared<gbh::SpriteNode>(kCheckpoint);
+        std::cout << "...adding checkpoint color...\n";
+        node->setColor(inactiveCheckpointColor);
+        std::cout << "...adding checkpoint physicsBody...\n";
+        node->setPhysicsBody(getPhysicsWorld()->createCircle(50));
+        node->getPhysicsBody()->makeSensor();
+        node->getPhysicsBody()->setEnabled(false);
+        node->setPosition(checkpointPositions[i]);
+        node->setName("checkpoint");
+        
+        m_checkpoints.push_back(node);
+        addChild(node);
+    }
     
     std::cout << "...done!\n";
 }

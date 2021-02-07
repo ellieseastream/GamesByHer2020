@@ -19,4 +19,6 @@ private:
     std::shared_ptr<gbh::SpriteNode> asteroid_4;
     sf::Music m_mainSceneMusic;
     std::shared_ptr<FollowCameraNode> m_followCamera;
+    std::vector<std::shared_ptr<gbh::SpriteNode>> m_checkpoints;
+    int m_currentCheckpoint = -1;
 };
