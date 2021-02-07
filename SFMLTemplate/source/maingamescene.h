@@ -3,6 +3,7 @@
 #include "followcameranode.h"
 #include "sfml-engine/scene.h"
 #include "sfml-engine/cameranode.h"
+#include "sfml-engine/physics/physicscontact.h"
 #include <SFML/Audio.hpp>
 
 class MainGameScene : public gbh::Scene {
@@ -11,6 +12,8 @@ protected:
     void onUpdate(double deltaTime) override;
     void onShowScene() override;
     void onHideScene() override;
+    void onBeginPhysicsContact(const gbh::PhysicsContact& contact) override;
+    void advanceCheckpoint();
 private:
     std::shared_ptr<gbh::SpriteNode> m_playerShip;
     std::shared_ptr<gbh::SpriteNode> asteroid_1;

@@ -5,6 +5,7 @@
 #include "sfml-engine/shapenode.h"
 #include "sfml-engine/spritenode.h"
 #include "sfml-engine/textnode.h"
+#include "sfml-engine/physics/physicscontact.h"
 
 #include <iostream>
 
@@ -21,7 +22,9 @@ static const float ACCELERATION = 2000.0f;
 static const float DEGREES_PER_SECOND_SMALL_ASTEROID = 7.0f;
 static const float DEGREES_PER_SECOND_MEDIUM_ASTEROID = 10.0f;
 static const float DEGREES_PER_SECOND_LARGE_ASTEROID = 2.0f;
-const sf::Color inactiveCheckpointColor = sf::Color(255, 255, 255, 64);
+const sf::Color kInactiveCheckpointColor = sf::Color(255, 255, 255, 64);
+const sf::Color kNextCheckpointColor = sf::Color(64, 64, 255, 192);
+const sf::Color kDoneCheckpointColor = sf::Color(64, 255, 64, 128);
 
 void MainGameScene::onInitializeScene() {
     std::cout << "Hello from onInitialize in MainGameScene! \n";
@@ -113,11 +116,13 @@ void MainGameScene::onInitializeScene() {
         sf::Vector2f(80.0f, 400.0f),
     };
     
-    for(int i= 0; i < checkpointPositions.size()-1; i++) {
+    std::cout << "Size of checkpointPositions: " << checkpointPositions.size() << "\n";
+    
+    for(int i= 0; i < checkpointPositions.size(); i++) {
         std::cout << "...adding checkpoint sprite...\n";
         std::shared_ptr<gbh::SpriteNode> node = std::make_shared<gbh::SpriteNode>(kCheckpoint);
         std::cout << "...adding checkpoint color...\n";
-        node->setColor(inactiveCheckpointColor);
+        node->setColor(kInactiveCheckpointColor);
         std::cout << "...adding checkpoint physicsBody...\n";
         node->setPhysicsBody(getPhysicsWorld()->createCircle(50));
         node->getPhysicsBody()->makeSensor();
@@ -128,6 +133,8 @@ void MainGameScene::onInitializeScene() {
         m_checkpoints.push_back(node);
         addChild(node);
     }
+    
+    advanceCheckpoint();
     
     std::cout << "...done!\n";
 }
@@ -162,6 +169,37 @@ void MainGameScene::onUpdate(double deltaTime) {
     asteroid_4->rotate(-DEGREES_PER_SECOND_LARGE_ASTEROID * deltaTime);
     
     // move camera
+}
+
+void MainGameScene::onBeginPhysicsContact(const gbh::PhysicsContact& contact) {
+    if(contact.containsNode(m_playerShip.get())) {
+        gbh::Node* otherNode = contact.otherNode(m_playerShip.get());
+        if(otherNode && otherNode->getName() == "checkpoint") {
+            advanceCheckpoint();
+        }
+    }
+}
+
+void MainGameScene::advanceCheckpoint() {
+    if(m_currentCheckpoint >= 0 && m_currentCheckpoint < m_checkpoints.size()) {
+        // disable current checkpoint
+        m_checkpoints[m_currentCheckpoint]->getPhysicsBody()->setEnabled(false);
+        // set color of the current checkpoint to green
+        m_checkpoints[m_currentCheckpoint]->setColor(kDoneCheckpointColor);
+        // set currentCheckPoint = currentCheckpoint + 1
+        m_currentCheckpoint++;
+    } else {
+        m_currentCheckpoint = 0;
+    }
+    
+    if(m_currentCheckpoint < m_checkpoints.size()) {
+        // set color of the next checkpoint (using the currentCheckpoint value) to blue
+        m_checkpoints[m_currentCheckpoint]->setColor(kNextCheckpointColor);
+        // enable the physics body of the next checkpoint to enable collosions
+        m_checkpoints[m_currentCheckpoint]->getPhysicsBody()->setEnabled(true);
+    } else {
+        std::cout << "Completed all checkpoints.";
+    }
 }
 
 void MainGameScene::onShowScene() {
