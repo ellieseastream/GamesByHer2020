@@ -22,7 +22,11 @@ private:
     std::shared_ptr<gbh::SpriteNode> asteroid_3;
     std::shared_ptr<gbh::SpriteNode> asteroid_4;
     sf::Music m_mainSceneMusic;
+    sf::Font m_robotoFont;
     std::shared_ptr<FollowCameraNode> m_followCamera;
     std::vector<std::shared_ptr<gbh::SpriteNode>> m_checkpoints;
     int m_currentCheckpoint = -1;
+    double m_playerTime;
+    std::shared_ptr<gbh::TextNode> m_timerText;
+    bool m_courseFinished = false;
 };
