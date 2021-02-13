@@ -11,7 +11,7 @@
 #include <iostream>
 #include <fstream>
 
-const std::string level_01 = "../assets/levels/level_01.txt";
+//const std::string level_01 = "../assets/levels/level_01.txt";
 const std::string kCheckpoint = "../assets/gfx/checkpoint.png";
 //const std::string kMainSceneMusic = "../assets/music/victor_2.ogg";
 const std::string kMainSceneMusic = "../assets/music/victor_7.ogg";
@@ -103,7 +103,6 @@ void MainGameScene::onInitializeScene() {
     
     setDrawPhysicsDebug(true);
     
-    
 // Add camera
     std::cout << "... adding camera...\n";
     m_followCamera = std::make_shared<FollowCameraNode>();
@@ -111,34 +110,7 @@ void MainGameScene::onInitializeScene() {
     m_followCamera->setPosition(640, 360);
     addChild(m_followCamera);
     setCamera(m_followCamera);
-    
-    // Adding checkpoints
-    std::vector<sf::Vector2f> checkpointPositions = {
-        sf::Vector2f(640.0f, 720.0f),
-        sf::Vector2f(1240.0f, 200.0f),
-        sf::Vector2f(80.0f, 400.0f),
-    };
-    
-    std::cout << "Size of checkpointPositions: " << checkpointPositions.size() << "\n";
-    
-    for(int i= 0; i < checkpointPositions.size(); i++) {
-        std::cout << "...adding checkpoint sprite...\n";
-        std::shared_ptr<gbh::SpriteNode> node = std::make_shared<gbh::SpriteNode>(kCheckpoint);
-        std::cout << "...adding checkpoint color...\n";
-        node->setColor(kInactiveCheckpointColor);
-        std::cout << "...adding checkpoint physicsBody...\n";
-        node->setPhysicsBody(getPhysicsWorld()->createCircle(50));
-        node->getPhysicsBody()->makeSensor();
-        node->getPhysicsBody()->setEnabled(false);
-        node->setPosition(checkpointPositions[i]);
-        node->setName("checkpoint");
-        
-        m_checkpoints.push_back(node);
-        addChild(node);
-    }
-    
-    advanceCheckpoint();
-    
+
     std::cout << "...done!\n";
 }
 
@@ -210,7 +182,8 @@ void MainGameScene::onShowScene() {
     m_mainSceneMusic.play();
     
     // load level
-    loadLevel();
+    loadLevel("../assets/levels/level_01.txt");
+    advanceCheckpoint();
 }
 
 void MainGameScene::onHideScene() {
@@ -218,16 +191,15 @@ void MainGameScene::onHideScene() {
     m_mainSceneMusic.stop();
 }
 
-void MainGameScene::loadLevel() {
-    // level_01
-    std::ifstream file(level_01);
+void MainGameScene::loadLevel(const std::string &filename) {
     
+    std::ifstream file(filename);
     nlohmann::json jsonFile;
     
     try {
         jsonFile = nlohmann::json::parse(file);
     } catch(const std::exception& e) {
-        std::cout << "Failed to load level from file " << level_01 << ": " << e.what() << "\n";
+        std::cout << "Failed to load level from file " << filename << ": " << e.what() << "\n";
         return;
     }
     
@@ -238,12 +210,40 @@ void MainGameScene::loadLevel() {
         return;
     }
     
+    std::vector<sf::Vector2f> checkpointPositions;
+    
     if(checkpoints.is_array()) {
         for(int i = 0; i < checkpoints.size(); i++) {
             float x = checkpoints[i]["x"].get<float>();
             float y = checkpoints[i]["y"].get<float>();
             
             std::cout << "Checkpoint: " << x << ", " << y << "\n";
+            checkpointPositions.push_back(sf::Vector2f(x, y));
         }
     }
+    
+    for(int i= 0; i < checkpointPositions.size(); i++) {
+        std::cout << "...adding checkpoint sprite...\n";
+        std::shared_ptr<gbh::SpriteNode> node = std::make_shared<gbh::SpriteNode>(kCheckpoint);
+        std::cout << "...adding checkpoint color...\n";
+        node->setColor(kInactiveCheckpointColor);
+        std::cout << "...adding checkpoint physicsBody...\n";
+        node->setPhysicsBody(getPhysicsWorld()->createCircle(50));
+        node->getPhysicsBody()->makeSensor();
+        node->getPhysicsBody()->setEnabled(false);
+        node->setPosition(checkpointPositions[i]);
+        node->setName("checkpoint");
+        
+        m_checkpoints.push_back(node);
+        addChild(node);
+    }
+    
+    /*
+    // Adding checkpoints
+    std::vector<sf::Vector2f> checkpointPositions = {
+        sf::Vector2f(640.0f, 720.0f),
+        sf::Vector2f(1240.0f, 200.0f),
+        sf::Vector2f(80.0f, 400.0f),
+    };
+     */
 }
