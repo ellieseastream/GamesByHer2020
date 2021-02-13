@@ -14,6 +14,7 @@ protected:
     void onHideScene() override;
     void onBeginPhysicsContact(const gbh::PhysicsContact& contact) override;
     void advanceCheckpoint();
+    void loadLevel(const std::string& filename);
 private:
     std::shared_ptr<gbh::SpriteNode> m_playerShip;
     std::shared_ptr<gbh::SpriteNode> asteroid_1;
