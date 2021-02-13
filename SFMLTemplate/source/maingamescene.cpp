@@ -12,6 +12,7 @@
 #include <fstream>
 
 //const std::string level_01 = "../assets/levels/level_01.txt";
+const std::string kFont = "../assets/fonts/roboto-regular.ttf";
 const std::string kCheckpoint = "../assets/gfx/checkpoint.png";
 //const std::string kMainSceneMusic = "../assets/music/victor_2.ogg";
 const std::string kMainSceneMusic = "../assets/music/victor_7.ogg";
@@ -112,6 +113,18 @@ void MainGameScene::onInitializeScene() {
     setCamera(m_followCamera);
 
     std::cout << "...done!\n";
+    
+    /*
+     std::shared_ptr<gbh::TextNode> textNode = std::make_shared<gbh::TextNode>("Space Race", m_robotoFont, 60);
+     textNode->setOrigin(0.5f, 0.5f);
+     textNode->setPosition(640, 100);
+     textNode->setName("Title"); */
+    
+    m_robotoFont.loadFromFile(kFont);
+    m_timerText = std::make_shared<gbh::TextNode>("0", m_robotoFont, 30);
+    m_timerText->setOrigin(1.0f, 1.0f);
+    m_timerText->setPosition(1270, 700);
+    getOverlay().addChild(m_timerText);
 }
 
 void MainGameScene::onUpdate(double deltaTime) {
@@ -133,6 +146,10 @@ void MainGameScene::onUpdate(double deltaTime) {
         moveDirection.x += 1.0f;
     }
     
+    if(sf::Keyboard::isKeyPressed(sf::Keyboard::Space) && m_courseFinished) {
+        gbh::Game::getInstance().changeScene("title");
+    }
+    
     moveDirection = gbh::math::normalize(moveDirection);
     
     // Multiply the move direction by the acceleration and apply the force to the player ship.
@@ -144,6 +161,12 @@ void MainGameScene::onUpdate(double deltaTime) {
     asteroid_4->rotate(-DEGREES_PER_SECOND_LARGE_ASTEROID * deltaTime);
     
     // move camera
+    
+    // update timer
+    if(!m_courseFinished) {
+        m_playerTime += deltaTime;
+        m_timerText->setString(std::to_string(m_playerTime));
+    }
 }
 
 void MainGameScene::onBeginPhysicsContact(const gbh::PhysicsContact& contact) {
@@ -174,6 +197,7 @@ void MainGameScene::advanceCheckpoint() {
         m_checkpoints[m_currentCheckpoint]->getPhysicsBody()->setEnabled(true);
     } else {
         std::cout << "Completed all checkpoints.";
+        m_courseFinished = true;
     }
 }
 
