@@ -6,9 +6,12 @@
 #include "sfml-engine/spritenode.h"
 #include "sfml-engine/textnode.h"
 #include "sfml-engine/physics/physicscontact.h"
+#include <nlohmann/json.hpp>
 
 #include <iostream>
+#include <fstream>
 
+const std::string level_01 = "../assets/levels/level_01.txt";
 const std::string kCheckpoint = "../assets/gfx/checkpoint.png";
 //const std::string kMainSceneMusic = "../assets/music/victor_2.ogg";
 const std::string kMainSceneMusic = "../assets/music/victor_7.ogg";
@@ -206,9 +209,41 @@ void MainGameScene::onShowScene() {
     // start music track
     m_mainSceneMusic.play();
     
+    // load level
+    loadLevel();
 }
 
 void MainGameScene::onHideScene() {
     // stop music track
     m_mainSceneMusic.stop();
+}
+
+void MainGameScene::loadLevel() {
+    // level_01
+    std::ifstream file(level_01);
+    
+    nlohmann::json jsonFile;
+    
+    try {
+        jsonFile = nlohmann::json::parse(file);
+    } catch(const std::exception& e) {
+        std::cout << "Failed to load level from file " << level_01 << ": " << e.what() << "\n";
+        return;
+    }
+    
+    nlohmann::json checkpoints = jsonFile["checkpoints"];
+    
+    if(!checkpoints.is_array()) {
+        std::cout << "Levels file either does not include a 'checkpoints' entry, or it is not an array.";
+        return;
+    }
+    
+    if(checkpoints.is_array()) {
+        for(int i = 0; i < checkpoints.size(); i++) {
+            float x = checkpoints[i]["x"].get<float>();
+            float y = checkpoints[i]["y"].get<float>();
+            
+            std::cout << "Checkpoint: " << x << ", " << y << "\n";
+        }
+    }
 }
