@@ -31,97 +31,12 @@ const sf::Color kNextCheckpointColor = sf::Color(64, 64, 255, 192);
 const sf::Color kDoneCheckpointColor = sf::Color(64, 255, 64, 128);
 
 void MainGameScene::onInitializeScene() {
-    std::cout << "Hello from onInitialize in MainGameScene! \n";
-    
-    m_mainSceneMusic.openFromFile(kMainSceneMusic);
-    m_mainSceneMusic.setVolume(20);
-    
-    std::cout << "Adding physics world...\n";
     Scene::createPhysicsWorld(sf::Vector2f(0.0f, 0.0f));
-    std::cout << "... done adding physics world.\n";
-    
-    //add space background
-    std::shared_ptr<gbh::SpriteNode> background = std::make_shared<gbh::SpriteNode>(kStarfield);
-    background->setName("background");
-    addChild(background);
-    std::cout << "Added background. \n";
-    
-    //add player ship
-    std::cout << "Adding ship. \n";
-    const sf::Vector2f shipSize = sf::Vector2f(40.0f, 220.0f);
-    m_playerShip = std::make_shared<gbh::SpriteNode>(kPlayerShip);
-    m_playerShip->setName("playership");
-    m_playerShip->setOrigin(0.5f, 0.5f);
-    m_playerShip->setPosition(640, 360);
-    //add a physics body to the ship (box shape)
-    std::cout << "...done, adding physics to ship. \n";
-    m_playerShip->setPhysicsBody(getPhysicsWorld()->createBox(shipSize * 0.5f));
-    m_playerShip->getPhysicsBody()->setLinearDamping(2.0f);
-    m_playerShip->getPhysicsBody()->setFixedRotation(true);
-    addChild(m_playerShip);
-    std::cout << "Added ship. \n";
-    
-    std::cout << "...done. Adding boundary...\n";
-    // build a wall around the game. Almost as big as the screen (1270, 710) and centered.
-    std::shared_ptr<gbh::Node> boundary = std::make_shared<gbh::Node>();
-    boundary->setPhysicsBody(getPhysicsWorld()->createEdgeBox(sf::Vector2f(1270, 719)));
-    boundary->getPhysicsBody()->setType(gbh::PhysicsBodyType::Static);
-    boundary->setPosition(1280.0f/2.0f, 720.0f/2.0f);
-    addChild(boundary);
-    
-    // Add asteroids
-    asteroid_1 = std::make_shared<gbh::SpriteNode>(kAsteroid_small_01);
-    asteroid_1->setOrigin(0.5f, 0.5f);
-    asteroid_1->setPosition(200, 200);
-    asteroid_1->setPhysicsBody(getPhysicsWorld()->createCircle(18));
-    asteroid_1->getPhysicsBody()->setAngularDamping(0.0f);
-    asteroid_1->getPhysicsBody()->setLinearDamping(0.2);
-    addChild(asteroid_1);
-    
-    asteroid_2 = std::make_shared<gbh::SpriteNode>(kAsteroid_small_02);
-    asteroid_2->setOrigin(0.5f, 0.5f);
-    asteroid_2->setPosition(400, 400);
-    asteroid_2->setPhysicsBody(getPhysicsWorld()->createCircle(13));
-    asteroid_2->getPhysicsBody()->setAngularDamping(0.0f);
-    asteroid_2->getPhysicsBody()->setLinearDamping(0.2);
-    addChild(asteroid_2);
-    
-    asteroid_3 = std::make_shared<gbh::SpriteNode>(kAsteroid_medium_01);
-    asteroid_3->setOrigin(0.5f, 0.5f);
-    asteroid_3->setPosition(500, 500);
-    asteroid_3->setPhysicsBody(getPhysicsWorld()->createCircle(30));
-    asteroid_3->getPhysicsBody()->setAngularDamping(0.0f);
-    asteroid_3->getPhysicsBody()->setLinearDamping(0.2);
-    addChild(asteroid_3);
-    
-    asteroid_4 = std::make_shared<gbh::SpriteNode>(kAsteroid_large_01);
-    asteroid_4->setOrigin(0.5f, 0.5f);
-    asteroid_4->setPosition(720, 200);
-    asteroid_4->setPhysicsBody(getPhysicsWorld()->createCircle(60));
-    asteroid_4->getPhysicsBody()->setAngularDamping(0.0f);
-    asteroid_4->getPhysicsBody()->setLinearDamping(0.2);
-    addChild(asteroid_4);
-    
     setDrawPhysicsDebug(true);
     
-// Add camera
-    std::cout << "... adding camera...\n";
-    m_followCamera = std::make_shared<FollowCameraNode>();
-    m_followCamera->setTarget(m_playerShip);
-    m_followCamera->setPosition(640, 360);
-    addChild(m_followCamera);
-    setCamera(m_followCamera);
-
-    std::cout << "...done!\n";
-    
-    /*
-     std::shared_ptr<gbh::TextNode> textNode = std::make_shared<gbh::TextNode>("Space Race", m_robotoFont, 60);
-     textNode->setOrigin(0.5f, 0.5f);
-     textNode->setPosition(640, 100);
-     textNode->setName("Title"); */
-    
+    // Adding Timer
     m_robotoFont.loadFromFile(kFont);
-    m_timerText = std::make_shared<gbh::TextNode>("0", m_robotoFont, 30);
+    m_timerText = std::make_shared<gbh::TextNode>("0.00", m_robotoFont, 30);
     m_timerText->setOrigin(1.0f, 1.0f);
     m_timerText->setPosition(1270, 700);
     getOverlay().addChild(m_timerText);
@@ -147,6 +62,11 @@ void MainGameScene::onUpdate(double deltaTime) {
     }
     
     if(sf::Keyboard::isKeyPressed(sf::Keyboard::Space) && m_courseFinished) {
+        gbh::Game::getInstance().changeScene("title");
+    }
+    
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape))
+    {
         gbh::Game::getInstance().changeScene("title");
     }
     
@@ -203,16 +123,50 @@ void MainGameScene::advanceCheckpoint() {
 
 void MainGameScene::onShowScene() {
     // start music track
+    m_mainSceneMusic.openFromFile(kMainSceneMusic);
+    m_mainSceneMusic.setVolume(20);
     m_mainSceneMusic.play();
     
     // load level
     loadLevel("../assets/levels/level_01.txt");
+    
+    // Reset checkpoints
+    m_currentCheckpoint = -1;
     advanceCheckpoint();
+    m_courseFinished = false;
+    
+    //add space background
+    std::shared_ptr<gbh::SpriteNode> background = std::make_shared<gbh::SpriteNode>(kStarfield);
+    background->setName("background");
+    addChild(background);
+    std::cout << "Added background. \n";
+    
+    // timer reset and course not finished
+    m_playerTime = 0.0;
+    m_timerText->setString("0");
+    
+    createPlayerShip();
+    
+    std::cout << "...done. Adding boundary...\n";
+    // build a wall around the game. Almost as big as the screen (1270, 710) and centered.
+    std::shared_ptr<gbh::Node> boundary = std::make_shared<gbh::Node>();
+    boundary->setPhysicsBody(getPhysicsWorld()->createEdgeBox(sf::Vector2f(1270, 719)));
+    boundary->getPhysicsBody()->setType(gbh::PhysicsBodyType::Static);
+    boundary->setPosition(1280.0f/2.0f, 720.0f/2.0f);
+    addChild(boundary);
+    
+    addCamera();
+    createAsteroids();
 }
 
 void MainGameScene::onHideScene() {
     // stop music track
     m_mainSceneMusic.stop();
+    
+    removeAllChildren(true);
+    m_playerShip = nullptr;
+    m_followCamera = nullptr;
+    
 }
 
 void MainGameScene::loadLevel(const std::string &filename) {
@@ -261,13 +215,64 @@ void MainGameScene::loadLevel(const std::string &filename) {
         m_checkpoints.push_back(node);
         addChild(node);
     }
+
+}
+
+void MainGameScene::createPlayerShip() {
+    //add player ship
+    const sf::Vector2f shipSize = sf::Vector2f(40.0f, 220.0f);
+    m_playerShip = std::make_shared<gbh::SpriteNode>(kPlayerShip);
+    m_playerShip->setName("playership");
+    m_playerShip->setOrigin(0.5f, 0.5f);
+    m_playerShip->setPosition(640, 360);
     
-    /*
-    // Adding checkpoints
-    std::vector<sf::Vector2f> checkpointPositions = {
-        sf::Vector2f(640.0f, 720.0f),
-        sf::Vector2f(1240.0f, 200.0f),
-        sf::Vector2f(80.0f, 400.0f),
-    };
-     */
+    //add a physics body to the ship (box shape)
+    m_playerShip->setPhysicsBody(getPhysicsWorld()->createBox(shipSize * 0.5f));
+    m_playerShip->getPhysicsBody()->setLinearDamping(2.0f);
+    m_playerShip->getPhysicsBody()->setFixedRotation(true);
+    addChild(m_playerShip);
+}
+
+void MainGameScene::createAsteroids() {
+    // Add asteroids
+    asteroid_1 = std::make_shared<gbh::SpriteNode>(kAsteroid_small_01);
+    asteroid_1->setOrigin(0.5f, 0.5f);
+    asteroid_1->setPosition(200, 200);
+    asteroid_1->setPhysicsBody(getPhysicsWorld()->createCircle(18));
+    asteroid_1->getPhysicsBody()->setAngularDamping(0.0f);
+    asteroid_1->getPhysicsBody()->setLinearDamping(0.2);
+    addChild(asteroid_1);
+    
+    asteroid_2 = std::make_shared<gbh::SpriteNode>(kAsteroid_small_02);
+    asteroid_2->setOrigin(0.5f, 0.5f);
+    asteroid_2->setPosition(400, 400);
+    asteroid_2->setPhysicsBody(getPhysicsWorld()->createCircle(13));
+    asteroid_2->getPhysicsBody()->setAngularDamping(0.0f);
+    asteroid_2->getPhysicsBody()->setLinearDamping(0.2);
+    addChild(asteroid_2);
+    
+    asteroid_3 = std::make_shared<gbh::SpriteNode>(kAsteroid_medium_01);
+    asteroid_3->setOrigin(0.5f, 0.5f);
+    asteroid_3->setPosition(500, 500);
+    asteroid_3->setPhysicsBody(getPhysicsWorld()->createCircle(30));
+    asteroid_3->getPhysicsBody()->setAngularDamping(0.0f);
+    asteroid_3->getPhysicsBody()->setLinearDamping(0.2);
+    addChild(asteroid_3);
+    
+    asteroid_4 = std::make_shared<gbh::SpriteNode>(kAsteroid_large_01);
+    asteroid_4->setOrigin(0.5f, 0.5f);
+    asteroid_4->setPosition(720, 200);
+    asteroid_4->setPhysicsBody(getPhysicsWorld()->createCircle(60));
+    asteroid_4->getPhysicsBody()->setAngularDamping(0.0f);
+    asteroid_4->getPhysicsBody()->setLinearDamping(0.2);
+    addChild(asteroid_4);
+}
+
+void MainGameScene::addCamera() {
+    // Add camera
+    m_followCamera = std::make_shared<FollowCameraNode>();
+    m_followCamera->setTarget(m_playerShip);
+    m_followCamera->setPosition(640, 360);
+    addChild(m_followCamera);
+    setCamera(m_followCamera);
 }
